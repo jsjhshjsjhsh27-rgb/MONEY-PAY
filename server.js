@@ -109,6 +109,11 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// /regist यूआरएल के लिए HTML फाइल भेजना
+app.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, 'register.html')); // अगर आपकी फाइल का नाम regist.html है
+});
+
 // बैंक अकाउंट सेव करने की API
 app.post('/api/save-bank', async (req, res) => {
     try {
