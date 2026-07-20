@@ -417,9 +417,9 @@
         
         let fullInviteLink = "";
         if (hostname === "localhost" || hostname === "127.0.0.1") {
-            fullInviteLink = `http://${hostname}${port}/regist.html?code=${userPermanentCode}`;
+            fullInviteLink = `http://${hostname}${port}/register.html?code=${userPermanentCode}`;
         } else {
-            fullInviteLink = `https://${hostname}/regist?code=${userPermanentCode}`;
+            fullInviteLink = `https://${hostname}/register.html?code=${userPermanentCode}`;
         }
         
         document.getElementById("inviteLinkText").innerText = fullInviteLink;
