@@ -269,7 +269,7 @@
         .history-amount {
             font-size: 14px;
             font-weight: 700;
-            color: #16a34a; /* Green for Commission */
+            color: #16a34a;
         }
 
         /* Navigation Bar */
@@ -325,20 +325,20 @@
                 </div>
                 <div class="team-stat-item">
                     <div class="team-stat-title">Team Recharge</div>
-                    <div class="team-stat-value">0.00</div>
+                    <div id="totalTeamRechargeVal" class="team-stat-value">0.00</div>
                 </div>
             </div>
             <div class="team-members-row">
                 <i class="fas fa-user text-xs"></i>
-                <span id="totalMembersCount">0</span>
+                <span id="totalMembersCount">0</span> Members
             </div>
         </div>
 
         <!-- Invite Code Section -->
         <div class="invite-section">
-            <div class="invite-title">Invite Code</div>
+            <div class="invite-title">Invite Link / Code</div>
             <div class="invite-box">
-                <span id="inviteLinkText" class="invite-link-text">Loading link...</span>
+                <span id="inviteLinkText" class="invite-link-text">Loading link from database...</span>
                 <button class="copy-btn" onclick="copyInviteLink()">
                     <i class="fas fa-copy"></i>
                 </button>
@@ -349,7 +349,7 @@
         <div class="section-container">
             <div class="section-title">Team Detail</div>
             <div id="teamListContainer" class="team-list">
-                <!-- JavaScript से डायनेमिक लोड होगा -->
+                <div style="text-align: center; color: #94a3b8; padding: 20px 0;">Loading team data...</div>
             </div>
         </div>
     </div>
@@ -378,9 +378,9 @@
             <div class="sub-header-title">Token History</div>
         </div>
         <div class="section-container" style="padding-top: 15px;">
-            <div class="section-title" style="font-size: 15px;">Commission Logs (5% Multi-level)</div>
+            <div class="section-title" style="font-size: 15px;">Commission Logs</div>
             <div id="tokenHistoryContainer" class="team-list">
-                <!-- कमीशन हिस्ट्री यहाँ शो होगी -->
+                <div style="text-align: center; color: #94a3b8; padding: 20px 0;">Loading history...</div>
             </div>
         </div>
     </div>
@@ -409,68 +409,79 @@
         </a>
     </div>
 
+    <script src="auth.js"></script>
     <script>
-        // 1. इनवाइट लिंक जनरेशन लॉजिक
-        const userPermanentCode = "tata98627"; 
-        const hostname = window.location.hostname || "localhost";
-        const port = window.location.port ? ":" + window.location.port : "";
-        
         let fullInviteLink = "";
-        if (hostname === "localhost" || hostname === "127.0.0.1") {
-            fullInviteLink = `http://${hostname}${port}/register.html?code=${userPermanentCode}`;
-        } else {
-            fullInviteLink = `https://${hostname}/register.html?code=${userPermanentCode}`;
-        }
-        
-        document.getElementById("inviteLinkText").innerText = fullInviteLink;
+        let teamData = [];
+        let tokenHistoryData = [];
+
+        // पेज लोड होने पर डेटाबेस से यूज़र का अपना डेटा और टीम फेट होगी
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (typeof requireAuth === 'function' && !requireAuth()) {
+                return;
+            }
+
+            try {
+                // 1. यूज़र की खुद की प्रोफाइल और परमानेंट रेफरल कोड लाना
+                const meResponse = await fetch('/api/me', { headers: typeof addAuthHeader === 'function' ? addAuthHeader() : {} });
+                const meData = await meResponse.json();
+
+                if (meData.success && meData.user) {
+                    const user = meData.user;
+                    const permanentCode = user.myReferralCode || user.referralCode || user.userID || "10001";
+                    
+                    const hostname = window.location.hostname || "localhost";
+                    const port = window.location.port ? ":" + window.location.port : "";
+                    
+                    if (hostname === "localhost" || hostname === "127.0.0.1") {
+                        fullInviteLink = `http://${hostname}${port}/register.html?code=${permanentCode}`;
+                    } else {
+                        fullInviteLink = `https://${hostname}/register.html?code=${permanentCode}`;
+                    }
+                    
+                    document.getElementById("inviteLinkText").innerText = fullInviteLink;
+                }
+
+                // 2. डेटाबेस से इस यूज़र की टीम का डेटा और कमीशन लाना
+                const teamResponse = await fetch('/api/team', { headers: typeof addAuthHeader === 'function' ? addAuthHeader() : {} });
+                const teamResult = await teamResponse.json();
+
+                if (teamResult.success) {
+                    teamData = teamResult.teamMembers || [];
+                    tokenHistoryData = teamResult.tokenHistory || [];
+
+                    // आंकड़े अपडेट करना
+                    document.getElementById("totalCommissionVal.innerText") = teamResult.totalCommission || "0.00";
+                    document.getElementById("totalTeamRechargeVal").innerText = teamResult.totalRecharge || "0.00";
+                    document.getElementById("totalMembersCount").innerText = teamResult.totalMembers || teamData.length;
+
+                    renderTeamList();
+                } else {
+                    // अगर API में टीम रूट नहीं बना है तो एम्प्टी स्टेट दिखाएं
+                    document.getElementById("teamListContainer").innerHTML = `<div style="text-align: center; color: #94a3b8; padding: 30px 0;">No team members found yet. Share your invite link!</div>`;
+                }
+
+            } catch (error) {
+                console.error("Failed to load team data from MongoDB:", error);
+                document.getElementById("teamListContainer").innerHTML = `<div style="text-align: center; color: #ef4444; padding: 30px 0;">Error loading team data from server.</div>`;
+            }
+        });
 
         function copyInviteLink() {
+            if (!fullInviteLink) return;
             navigator.clipboard.writeText(fullInviteLink).then(() => {
                 alert("Invite link copied successfully!");
             });
         }
 
-        // 2. मल्टी-लेवल टीम डेटा स्ट्रक्चर (मेंबर 1 -> मेंबर 2 -> मेंबर 3 चेन)
-        const teamData = [
-            {
-                phone: "897****7688", // मेंबर 1 (सीनियर्स में सबसे ऊपर)
-                recharge: 5000,
-                comm: "230.04",
-                membersCount: 7,
-                subMembers: [
-                    { 
-                        phone: "848****8388", // मेंबर 2 (मेंबर 1 के नीचे)
-                        recharge: 3000, 
-                        comm: "150.00",
-                        subMembers: [
-                            { phone: "936****7220", recharge: 2000, comm: "100.00" } // मेंबर 3 (मेंबर 2 के नीचे)
-                        ]
-                    },
-                    { phone: "700****1354", recharge: 0, comm: "0.6", subMembers: [] },
-                    { phone: "825****1402", recharge: 0, comm: "22.59", subMembers: [] }
-                ]
-            },
-            {
-                phone: "986****1214",
-                recharge: 10000,
-                comm: "819.38",
-                membersCount: 12,
-                subMembers: [
-                    { phone: "912****4321", recharge: 1500, comm: "45.00", subMembers: [] }
-                ]
-            }
-        ];
-
-        // 3. टोकन हिस्ट्री (कमीशन लॉग्स - मल्टी लेवल 5% रूल के साथ)
-        const tokenHistoryData = [
-            { member: "936****7220 (Member 3)", orderAmount: "2000.00", level: "Level 2 Up (Member 2 & 1)", commission: "+100.00 (5%)", time: "2026-06-07 14:30" },
-            { member: "848****8388 (Member 2)", orderAmount: "3000.00", level: "Level 1 Up (Member 1)", commission: "+150.00 (5%)", time: "2026-06-06 11:15" },
-            { member: "912****4321", orderAmount: "1500.00", level: "Direct Referral", commission: "+75.00 (5%)", time: "2026-06-05 09:40" }
-        ];
-
         function renderTeamList() {
             const container = document.getElementById("teamListContainer");
             container.innerHTML = "";
+
+            if (teamData.length === 0) {
+                container.innerHTML = `<div style="text-align: center; color: #94a3b8; padding: 30px 0;">No team members found</div>`;
+                return;
+            }
 
             teamData.forEach((member, index) => {
                 const card = document.createElement("div");
@@ -483,14 +494,14 @@
                             <i class="fas fa-wave-square text-xs"></i>
                         </div>
                         <div class="team-card-info">
-                            <h4>Phone: ${member.phone}</h4>
-                            <p>Recharge: ${member.recharge}</p>
+                            <h4>Phone: ${member.phone || member.email || 'User'}</h4>
+                            <p>Recharge: ${member.recharge || 0}</p>
                         </div>
                     </div>
                     <div class="team-card-right">
                         <div class="team-card-stats">
-                            <div><i class="fas fa-user text-[10px]"></i> ${member.membersCount}</div>
-                            <div>Comm: ${member.comm}</div>
+                            <div><i class="fas fa-user text-[10px]"></i> ${member.membersCount || (member.subMembers ? member.subMembers.length : 0)}</div>
+                            <div>Comm: ${member.comm || member.commission || '0.00'}</div>
                         </div>
                         <div class="arrow-icon">&gt;</div>
                     </div>
@@ -499,10 +510,9 @@
             });
         }
 
-        // टीम इन्फो और सब-मेंबर्स दिखाने का फंक्शन (चेन लॉजिक के साथ)
         function openTeamInfo(index) {
             const member = teamData[index];
-            document.getElementById("currentInspectPhone").innerText = member.phone;
+            document.getElementById("currentInspectPhone").innerText = member.phone || member.email || 'Sub-member';
 
             const subContainer = document.getElementById("subTeamListContainer");
             subContainer.innerHTML = "";
@@ -518,14 +528,14 @@
                         <div class="team-card-left">
                             <div class="team-avatar" style="width: 38px; height: 38px;"></div>
                             <div class="team-card-info">
-                                <h4 style="font-size: 13px;">Phone: ${sub.phone}</h4>
-                                <p style="font-size: 11px;">Recharge: ${sub.recharge}</p>
+                                <h4 style="font-size: 13px;">Phone: ${sub.phone || sub.email}</h4>
+                                <p style="font-size: 11px;">Recharge: ${sub.recharge || 0}</p>
                             </div>
                         </div>
                         <div class="team-card-right">
                             <div class="team-card-stats">
                                 <div style="color: transparent;">-</div>
-                                <div style="font-size: 12px;">Comm: ${sub.comm}</div>
+                                <div style="font-size: 12px;">Comm: ${sub.comm || sub.commission || '0.00'}</div>
                             </div>
                         </div>
                     `;
@@ -544,38 +554,9 @@
             window.scrollTo(0, 0);
         }
 
-        // Token History स्क्रीन खोलने और बंद करने के फंक्शन्स
-        function openTokenHistory() {
+        function openTokenHistory() {}
             const historyContainer = document.getElementById("tokenHistoryContainer");
             historyContainer.innerHTML = "";
 
-            tokenHistoryData.forEach(item => {
-                const historyCard = document.createElement("div");
-                historyCard.className = "history-card";
-                historyCard.innerHTML = `
-                    <div class="history-info">
-                        <h5>Order By: ${item.member}</h5>
-                        <p>Chain: ${item.level} | Time: ${item.time}</p>
-                    </div>
-                    <div class="history-amount">
-                        ${item.commission}
-                    </div>
-                `;
-                historyContainer.appendChild(historyCard);
-            });
-
-            document.getElementById("teamMainScreen").classList.remove("active");
-            document.getElementById("tokenHistoryScreen").classList.add("active");
-            window.scrollTo(0, 0);
-        }
-
-        function closeTokenHistory() {
-            document.getElementById("tokenHistoryScreen").classList.remove("active");
-            document.getElementById("teamMainScreen").classList.add("active");
-            window.scrollTo(0, 0);
-        }
-
-        renderTeamList();
-    </script>
-</body>
-</html>
+            if (tokenHistoryData.length === 0) {}
+                historyContainer.innerHTML = `<div style="text-align: center; color: #94 a3b8; padding: 40px 0; font-size: 13px;">No token history found</div>`;
