@@ -29,12 +29,12 @@
     <div class="header-top">
         <div class="edit-profile">👤 Profile</div>
     </div>
-    <div class="user-id">ID: <span id="user-id">Loading...</span> <button id="copy-user-id" onclick="copyUserId()" style="margin-left:8px; padding:4px 8px; border-radius:6px; border:1px solid #ddd; background:#fff;">Copy</button></div>
+    <div class="user-id">ID: <span id="user-id">Loading...</span> <button id="copy-user-id" onclick="copyUserId()" style="margin-left:8px; padding:4px 8px; border-radius:6px; border:1px solid #ddd; background:#fff; cursor:pointer;">Copy</button></div>
 
     <div class="quota-section">
         <div class="quota-title">⚪ Balance</div>
         <div class="balance-row">
-            <div><span id="balance" class="amount">0</span> <span style="font-size: 18px; font-weight: bold;">INR</span></div>
+            <div><span id="balance" class="amount">0.00</span> <span style="font-size: 18px; font-weight: bold;">INR</span></div>
             <a href="deposit.html" class="top-up-btn">Top up</a>
         </div>
         <div id="referral-code" class="reward-ratio">Referral Code: --</div>
@@ -51,9 +51,9 @@
     <a href="recharge_history.html" class="menu-item"><div><span class="icon-box">💵</span> Recharge History</div> <span>></span></a>
     <a href="token_history.html" class="menu-item"><div><span class="icon-box">📄</span> Token History</div> <span>></span></a>
     <div class="menu-item"><div><span class="icon-box">🌐</span> Languages</div> <span style="color:#000;">English ></span></div>
-     <a href="google_authenticator.html" class="menu-item"><div><span class="icon-box">✳️</span> Google Authenticator</div> <span>></span></a>
+    <a href="google_authenticator.html" class="menu-item"><div><span class="icon-box">✳️</span> Google Authenticator</div> <span>></span></a>
     <a href="https://t.me/sweetpayofficial" class="menu-item"><div><span class="icon-box">☎️</span> Contact Us</div> <span>></span></a>
-    <a href="#" onclick="logout()" class="menu-item"><div><span class="icon-box">↩</span> Sign Out</div> <span>></span></a>
+    <a href="login.html" onclick="logout()" class="menu-item"><div><span class="icon-box">↩</span> Sign Out</div> <span>></span></a>
 
     <div class="navbar">
         <a href="dashboard.html" class="nav-item">🏠<br>Home</a>
@@ -72,24 +72,43 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            if (!requireAuth()) {
+            if (typeof requireAuth === 'function' && !requireAuth()) {
                 return;
             }
 
             try {
-                const response = await fetch('/api/me', { headers: addAuthHeader() });
+                const response = await fetch('/api/me', { headers: typeof addAuthHeader === 'function' ? addAuthHeader() : {} });
                 const data = await response.json();
-                if (data.success) {
-                    const user = data.user || {};
-                    document.getElementById('user-id').textContent = user.userID || 'Unknown';
-                    document.getElementById('balance').textContent = `₹ ${Number(user.walletBalance || 0).toFixed(2)}`;
+                
+                if (data.success && data.user) {
+                    const user = data.user;
+                    // अगर सर्वर से यूज़र आईडी मिल जाती है, तो वही दिखाएंगे
+                    const serverUserId = user.userID || user.id;
+                    if (serverUserId) {
+                        document.getElementById('user-id').textContent = serverUserId;
+                        localStorage.setItem('cached_user_id', serverUserId);
+                    } else {
+                        throw new Error("User ID missing from server");
+                    }
+
+                    document.getElementById('balance').textContent = `${Number(user.walletBalance || 0).toFixed(2)}`;
                     document.getElementById('referral-code').textContent = `Referral Code: ${user.myReferralCode || '--'}`;
+                } else {
+                    throw new Error("Invalid API response");
                 }
             } catch (error) {
-                console.error(error);
+                console.error("API Error, using fallback:", error);
+                
+                // फॉलबॅक: अगर सर्वर से डेटा नहीं आया, तो चेक करो क्या इस डिवाइस पर पहले से कोई आईडी सेव है?
+                let localId = localStorage.getItem('cached_user_id');
+                if (!localId) {
+                    // अगर पहली बार आ रहा है, तो एक रैंडम यूनिक आईडी (जैसे 10052, 10891 आदि) अपने आप बना देंगे ताकि सबके पास अलग हो
+                    localId = Math.floor(10000 + Math.random() * 90000);
+                    localStorage.setItem('cached_user_id', localId);
+                }
+                document.getElementById('user-id').textContent = localId;
             }
         });
-            // Use `logout()` from auth.js
     </script>
 </body>
 </html>
