@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Pay - Token History</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background-color: #f7f9fa;
+            color: #333;
+            padding-bottom: 40px;
+        }
+        .header-bar {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background: #fff;
+            border-bottom: 1px solid #f1f5f9;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .back-btn {
+            font-size: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #0f172a;
+            margin-right: 15px;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        /* Single Filter Tabs Bar (Recharge History Style) */
+        .token-tabs {
+            display: flex;
+            gap: 20px;
+            padding: 12px 20px;
+            background: #fff;
+            border-bottom: 1px solid #f1f5f9;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: none;
+        }
+        .token-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        .token-tab {
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            padding-bottom: 5px;
+            flex-shrink: 0;
+        }
+        .token-tab.active {
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+        }
+        /* Token History Card */
+        .token-card {
+            background: #fff;
+            margin: 15px 20px;
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border-left: 4px solid #2563eb;
+        }
+        .token-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .token-row:last-child {
+            margin-bottom: 0;
+        }
+        .token-label {
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .token-val {
+            color: #0f172a;
+            font-weight: 600;
+            text-align: right;
+            word-break: break-all;
+            max-width: 65%;
+        }
+        .amount-highlight {
+            font-size: 16px;
+            font-weight: 700;
+            color: #15803d;
+        }
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <a href="deposit.html" class="back-btn">&lt;</a>
+        <div class="header-title">Token History</div>
+    </div>
+
+    <!-- Single Tab Bar for All Categories -->
+    <div class="token-tabs">
+        <div class="token-tab active" onclick="filterToken('All', this)">All</div>
+        <div class="token-tab" onclick="filterToken('Payment', this)">Payment</div>
+        <div class="token-tab" onclick="filterToken('Success', this)">Success</div>
+        <div class="token-tab" onclick="filterToken('Return', this)">Return</div>
+        <div class="token-tab" onclick="filterToken('Transfer', this)">Transfer</div>
+        <div class="token-tab" onclick="filterToken('Commission', this)">Commission</div>
+        <div class="token-tab" onclick="filterToken('Reward', this)">Reward</div>
+    </div>
+
+    <!-- Token History Container -->
+    <div id="tokenHistoryContainer">
+        <!-- Dynamic items will load here -->
+    </div>
+
+    <script>
+        // लोकल स्टोरेज से टोकन हिस्ट्री लोड करना
+        let tokenHistoryData = JSON.parse(localStorage.getItem('tokenHistory') || '[]');
+
+        if (tokenHistoryData.length === 0) {
+            tokenHistoryData = [
+                {
+                    type: 'Commission',
+                    amount: '150.00',
+                    upi: '-',
+                    utr: 'COM984321654',
+                    desc: 'Member team commission bonus from level 1',
+                    time: '2026-07-09 10:30:12'
+                },
+                {
+                    type: 'Success',
+                    amount: '1900.00',
+                    upi: '-',
+                    utr: '511937861896',
+                    desc: 'Payment task success 511937861896',
+                    time: '2026-07-08 23:49:16'
+                },
+                {
+                    type: 'Return',
+                    amount: '299.47',
+                    upi: 'abdul-25000@ybl',
+                    utr: '095882885615',
+                    desc: 'Money return deduct 299.470000',
+                    time: '2026-07-08 23:54:36'
+                },
+                {
+                    type: 'Reward',
+                    amount: '76.00',
+                    upi: '-',
+                    utr: 'REW5119378',
+                    desc: 'Payment task reward bonus',
+                    time: '2026-07-08 23:49:16'
+                }
+            ];
+            localStorage.setItem('tokenHistory', JSON.stringify(tokenHistoryData));
+        }
+
+        function renderTokenHistory(category) {
+            const container = document.getElementById('tokenHistoryContainer');
+            container.innerHTML = '';
+
+            let filteredData = tokenHistoryData;
+            if (category !== 'All') {
+                filteredData = tokenHistoryData.filter(item => item.type === category);
+            }
+
+            if (filteredData.length === 0) {
+                container.innerHTML = `<div class="no-data">No history found for ${category}</div>`;
+                return;
+            }
+
+            filteredData.forEach(item => {
+                let cardHTML = `
+                    <div class="token-card">
+                        <div class="token-row">
+                            <span class="token-label">Amount</span>
+                            <span class="token-val amount-highlight">+${item.amount}</span>
+                        </div>
+                        ${item.bank && item.bank!== '-' ? `
+                        <div class="token-row">
+                            <span class="token-label">Bank</span>
+                            <span class="token-val">${item.bank}</span>
+                        </div>` : ''}
+                        <div class="token-row">
+                            <span class="token-label">UTR</span>
+                            <span class="token-val">${item.utr}</span>
+                        </div>
+                        <div class="token-row">
+                            <span class="token-label">Desc</span>
+                            <span class="token-val">${item.desc}</span>
+                        </div>
+                        <div class="token-row">
+                            <span class="token-label">Time</span>
+                            <span class="token-val" style="color: #64748b; font-size: 13px;">${item.time}</span>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            });
+        }
+
+        function filterToken(category, element) {
+            document.querySelectorAll('.token-tab').forEach(tab => tab.classList.remove('active'));
+            element.classList.add('active');
+            renderTokenHistory(category);
+        }
+
+        // पेज लोड होते ही 'All' डेटा दिखाना
+        renderTokenHistory('All');
+    </script>
+</body>
+</html>

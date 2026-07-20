@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Pay - Task Detail</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background-color: #f7f9fa;
+            color: #333;
+            padding-bottom: 40px;
+        }
+        .header-bar {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background: #fff;
+            border-bottom: 1px solid #f1f5f9;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .back-btn {
+            font-size: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #0f172a;
+            margin-right: 15px;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        /* Countdown Timer */
+        .countdown-box {
+            background: #fef2f2;
+            margin: 15px 20px;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: #dc2626;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        /* Details Card */
+        .detail-card {
+            background: #fff;
+            margin: 0 20px 20px 20px;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f8fafc;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-size: 13px;
+            color: #64748b;
+        }
+        .detail-val-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .detail-val {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+            word-break: break-all;
+            text-align: right;
+        }
+        .copy-icon {
+            cursor: pointer;
+            font-size: 14px;
+            color: #2563eb;
+            background: #f1f5f9;
+            padding: 6px 8px;
+            border-radius: 6px;
+        }
+        .warning-text {
+            font-size: 12px;
+            color: #ea580c;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+        /* QuickPay Button */
+        .quickpay-container {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+        .quickpay-btn {
+            width: 100%;
+            background-color: #f97316;
+            color: #fff;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25);
+        }
+        /* UTR & Screenshot Section */
+        .upload-section {
+            background: #fff;
+            margin: 0 20px 20px 20px;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .utr-input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 15px;
+            color: #0f172a;
+        }
+        .upload-label {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .file-dropzone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8fafc;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .file-dropzone input {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        /* Submit & Cancel Buttons */
+        .action-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .submit-task-btn {
+            width: 100%;
+            background-color: #0f172a;
+            color: #fff;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .cancel-task-btn {
+            width: 100%;
+            background-color: #dc2626;
+            color: #fff;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        /* Confirmation Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #fff;
+            width: 90%;
+            max-width: 340px;
+            border-radius: 16px;
+            padding: 25px 20px;
+            text-align: center;
+        }
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 10px;
+        }
+        .modal-desc {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-no {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+        .btn-yes {
+            background: #dc2626;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <a href="deposit.html" class="back-btn">&lt;</a>
+        <div class="header-title">Task Detail</div>
+    </div>
+
+    <!-- Countdown Timer -->
+    <div class="countdown-box">
+        <span>⏱️</span> <span id="timerText">00:29:10</span>
+    </div>
+
+    <!-- Bank Details Card -->
+    <div class="detail-card">
+        <div class="detail-row">
+            <span class="detail-label">Payment UPI</span>
+            <div class="detail-val-box">
+                <span class="detail-val" id="valUpi">9862713447@freecharge</span>
+                <span class="copy-icon" onclick="copyText('9862713447@freecharge')">📋</span>
+            </div>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">AccountNumber</span>
+            <div class="detail-val-box">
+                <span class="detail-val" id="valCard">20401036509</span>
+                <span class="copy-icon" onclick="copyText('20401036509')">📋</span>
+            </div>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Bank Name</span>
+            <div class="detail-val-box">
+                <span class="detail-val" id="valBank">Fino Payment Bank</span>
+                <span class="copy-icon" onclick="copyText('Fino Payment Bank')">📋</span>
+            </div>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">IFSC</span>
+            <div class="detail-val-box">
+                <span class="detail-val" id="valIfsc">FINO0009001</span>
+                <span class="copy-icon" onclick="copyText('FINO0009001')">📋</span>
+            </div>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Payee Name</span>
+            <div class="detail-val-box">
+                <span class="detail-val" id="valName">Noor Bhanu Begum</span>
+                <span class="copy-icon" onclick="copyText('Noor Bhanu Begum')">📋</span>
+            </div>
+        </div>
+        <div class="detail-row" style="flex-direction: column; align-items: flex-start;">
+            <div style="display: flex; justify-content: space-width; width: 100%; align-items: center; justify-content: space-between;">
+                <span class="detail-label">Money</span>
+                <div class="detail-val-box">
+                    <span class="detail-val" id="valMoney">3690 RS</span>
+                    <span class="copy-icon" onclick="copyText('3690')">📋</span>
+                </div>
+            </div>
+            <div class="warning-text" id="warningMoneyText">Please make sure to confirm amount 3690RS!</div>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Remark</span>
+            <div class="detail-val-box">
+                <span class="detail-val" id="valRemark">OF1eaho44oIf</span>
+                <span class="copy-icon" onclick="copyText('OF1eaho44oIf')">📋</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- QuickPay Button -->
+    <div class="quickpay-container">
+        <button class="quickpay-btn" onclick="triggerQuickPay()">QuickPay</button>
+    </div>
+
+    <!-- UTR & Proof Upload -->
+    <div class="upload-section">
+        <input type="text" id="utrInput" class="utr-input" placeholder="UTR(UPI Ref.ID)">
+        <span class="upload-label">Please must upload proof of payment</span>
+        <div class="file-dropzone" id="dropzoneText">
+            📁 Click or tap to select payment screenshot
+            <input type="file" id="screenshotFile" accept="image/*" onchange="handleFileSelect(event)">
+        </div>
+
+        <div class="action-btns">
+            <button class="submit-task-btn" onclick="submitTask()">Submit</button>
+            <button class="cancel-task-btn" onclick="openCancelModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Cancel Confirmation Modal -->
+    <div class="modal" id="cancelModal">
+        <div class="modal-content">
+            <div class="modal-title">Are you sure cancel this order?</div>
+            <div class="modal-desc">You will not be able to undo this action once it's confirmed.</div>
+            <div class="modal-actions">
+                <button class="modal-btn btn-no" onclick="closeCancelModal()">Cancel</button>
+                <button class="modal-btn btn-yes" onclick="confirmCancelOrder()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get URL Parameters passed from deposit page
+        const urlParams = new URLSearchParams(window.location.search);
+        const amountParam = urlParams.get('amount') || '3690';
+        const upiParam = urlParams.get('upi') || '9862713447@freecharge';
+
+        document.getElementById('valMoney').innerText = amountParam + ' RS';
+        document.getElementById('warningMoneyText').innerText = `Please make sure to confirm amount ${amountParam}RS!`;
+        document.getElementById('valUpi').innerText = upiParam;
+
+        // Countdown Timer (30 minutes)
+        let totalSeconds = 30 * 60;
+        const timerInterval = setInterval(() => {
+            if (totalSeconds <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('timerText').innerText = "00:00:00 - Timeout";
+                alert("Task timed out! You can no longer make payment.");
+                window.location.href = "recharge_history.html?status=timeout";
+                return;
+            }
+            totalSeconds--;
+            let mins = Math.floor(totalSeconds / 60);
+            let secs = totalSeconds % 60;
+            document.getElementById('timerText').innerText = `00:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }, 1000);
+
+        // Copy Function
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard: ' + text);
+            });
+        }
+
+        // QuickPay UPI App Trigger
+        function triggerQuickPay() {
+            let upiAddress = document.getElementById('valUpi').innerText;
+            let amount = amountParam;
+            let payeeName = document.getElementById('valName').innerText;
+            
+            // Intent URL to trigger mobile UPI apps directly (GPay, PhonePe, Paytm, etc.)
+            let upiIntentUrl = `upi://pay?pa=${encodeURIComponent(upiAddress)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR`;
+            
+            window.location.href = upiIntentUrl;
+        }
+
+        let uploadedFileName = '';
+        function handleFileSelect(event) {
+            if(event.target.files.length > 0) {
+                uploadedFileName = event.target.files[0].name;
+                document.getElementById('dropzoneText').innerHTML = `✅ Selected: ${uploadedFileName}`;
+            }
+        }
+
+        // Submit Task -> Send to Recharge History (In Payment)
+        function submitTask() {
+            let utr = document.getElementById('utrInput').value.trim();
+            if(!utr) {
+                alert('Please enter UTR (UPI Ref.ID)');
+                return;
+            }
+            if(!uploadedFileName) {
+                alert('Please upload payment screenshot proof');
+                return;
+            }
+
+            // Save order info to localStorage to display in Recharge History
+            let historyItem = {
+                amount: amountParam,
+                income: Math.round(amountParam * 0.04),
+                quota: Number(amountParam) + Math.round(amountParam * 0.04),
+                utr: utr,
+                status: 'In Payment',
+                time: new Date().toISOString()
+            };
+
+            let existingHistory = JSON.parse(localStorage.getItem('rechargeHistory') || '[]');
+            existingHistory.unshift(historyItem);
+            localStorage.setItem('rechargeHistory', JSON.stringify(existingHistory));
+
+            alert('Task submitted successfully! Moved to In Payment.');
+            window.location.href = 'recharge_history.html?tab=in_payment';
+        }
+
+        // Cancel Modal Controls
+        function openCancelModal() {
+            document.getElementById('cancelModal').style.display = 'flex';
+        }
+        function closeCancelModal() {
+            document.getElementById('cancelModal').style.display = 'none';
+        }
+        function confirmCancelOrder() {
+            let historyItem = {
+                amount: amountParam,
+                income: Math.round(amountParam * 0.04),
+                quota: Number(amountParam) + Math.round(amountParam * 0.04),
+                utr: 'Cancelled',
+                status: 'Timeout',
+                time: new Date().toISOString()
+            };
+            let existingHistory = JSON.parse(localStorage.getItem('rechargeHistory') || '[]');
+            existingHistory.unshift(historyItem);
+            localStorage.setItem('rechargeHistory', JSON.stringify(existingHistory));
+
+            window.location.href = 'recharge_history.html?tab=timeout';
+        }
+    </script>
+</body>
+</html>

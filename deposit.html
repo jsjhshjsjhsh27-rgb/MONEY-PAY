@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Pay - Deposit</title>
+    <!-- QR Code Library for dynamic QR generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background-color: #f7f9fa;
+            color: #333;
+            padding-bottom: 90px;
+        }
+        /* Top Tabs (INR / USDT) */
+        .top-tabs {
+            display: flex;
+            background-color: #fff;
+            padding: 12px 20px 0 20px;
+            gap: 25px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .top-tab {
+            font-size: 18px;
+            font-weight: 700;
+            color: #94a3b8;
+            cursor: pointer;
+            padding-bottom: 10px;
+            position: relative;
+        }
+        .top-tab.active {
+            color: #0f172a;
+        }
+        .top-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #0f172a;
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* Sub Tabs (Task) */
+        .sub-tabs {
+            display: flex;
+            background-color: #fff;
+            padding: 10px 20px;
+            gap: 20px;
+            align-items: center;
+        }
+        .sub-tab {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+            cursor: pointer;
+        }
+
+        /* Notice Banner */
+        .notice-banner {
+            background-color: #f3f0ff;
+            margin: 12px 20px;
+            padding: 12px 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #4c1d95;
+            font-weight: 500;
+        }
+
+        /* Video Link */
+        .video-link-container {
+            padding: 0 20px;
+            margin-bottom: 12px;
+        }
+        .video-link-btn {
+            background: none;
+            border: none;
+            color: #0f172a;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Filter Controls */
+        .filter-section {
+            display: flex;
+            padding: 0 20px;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .dropdown-box {
+            position: relative;
+            flex: 1.2;
+        }
+        .dropdown-btn {
+            width: 100%;
+            background: #f1f5f9;
+            border: none;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #334155;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 105%;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 50;
+            overflow: hidden;
+        }
+        .dropdown-item {
+            padding: 10px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            color: #334155;
+            border-bottom: 1px solid #f8fafc;
+        }
+        .dropdown-item:hover {
+            background: #f1f5f9;
+        }
+        .min-max-box {
+            flex: 1.5;
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 8px;
+            align-items: center;
+            padding: 0 8px;
+        }
+        .min-max-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 10px 4px;
+            font-size: 13px;
+            outline: none;
+            text-align: center;
+            color: #334155;
+        }
+        .refresh-btn {
+            background: #000;
+            color: #fff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Order Card List */
+        .order-list {
+            padding: 0 20px;
+        }
+        .order-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .order-info h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+        .order-details {
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+        }
+        .detail-item .label {
+            color: #64748b;
+        }
+        .detail-item .val {
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .detail-item .quota-val {
+            color: #0d9488;
+            font-weight: 600;
+        }
+        .buy-btn {
+            background: #000;
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* USDT Content Section */
+        .usdt-section {
+            display: none;
+            padding: 20px;
+        }
+        .qr-wrapper {
+            background: #fff;
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .qr-box {
+            display: inline-block;
+            padding: 10px;
+            background: #fff;
+            border-radius: 8px;
+            position: relative;
+        }
+        /* Center Logo Inside QR */
+        .qr-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 36px;
+            height: 36px;
+            background: #0d9488;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: bold;
+            font-size: 18px;
+            border: 2px solid #fff;
+        }
+        .wallet-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            border: 1px solid #f1f5f9;
+        }
+        .wallet-title {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        .wallet-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .wallet-address {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f172a;
+            word-break: break-all;
+        }
+        .copy-btn {
+            background: #f1f5f9;
+            border: none;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #0f172a;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .network-fee-box {
+            background: #fff;
+            border-radius: 10px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #334155;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .calculator-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            margin-bottom: 15px;
+        }
+        .calc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .calc-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            margin-bottom: 12px;
+            color: #0f172a;
+        }
+        .calc-results {
+            font-size: 13px;
+            color: #0f172a;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+        .deposit-note {
+            font-size: 12px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        /* UPI Selection Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #fff;
+            width: 90%;
+            max-width: 360px;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+        .modal-header {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #0f172a;
+        }
+        .upi-option-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .upi-option-item {
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            color: #1e293b;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+        .upi-option-item:hover, .upi-option-item.selected {
+            background: #0f172a;
+            color: #fff;
+            border-color: #0f172a;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-cancel {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+        .btn-confirm {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-top: 1px solid #e2e8f0;
+            z-index: 1000;
+        }
+        .nav-item {
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: #94a3b8;
+            flex: 1;
+        }
+        .nav-item.active {
+            color: #0f172a;
+        }
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 3px;
+            display: block;
+        }
+        .nav-text {
+            font-size: 11px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Tabs -->
+    <div class="top-tabs">
+        <div class="top-tab active" onclick="switchTab('inr')">INR</div>
+        <div class="top-tab" onclick="switchTab('usdt')">USDT</div>
+    </div>
+
+    <!-- INR Section Content -->
+    <div id="inrSection">
+        <div class="sub-tabs">
+            <div class="sub-tab">Task</div>
+        </div>
+
+        <div class="notice-banner">
+            <span style="font-size: 18px;">🪙</span>
+            <span>Complete a task to earn Commission and Bonus</span>
+        </div>
+
+        <div class="video-link-container">
+            <button class="video-link-btn" onclick="openVideoModal('How Buy Quota?', 'tutorial_quota.mp4')">
+                <span>▶</span> How Buy Quota?
+            </button>
+        </div>
+
+        <!-- Filter & Search Section -->
+        <div class="filter-section">
+            <div class="dropdown-box">
+                <button class="dropdown-btn" onclick="toggleDropdown()">
+                    <span id="selectedFilterText">From low to high</span>
+                    <span>▼</span>
+                </button>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <div class="dropdown-item" onclick="setSortOrder('low-high')">From low to high</div>
+                    <div class="dropdown-item" onclick="setSortOrder('high-low')">From high to low</div>
+                </div>
+            </div>
+
+            <div class="min-max-box">
+                <input type="number" id="minInput" class="min-max-input" placeholder="Min">
+                <span style="color: #94a3b8;">-</span>
+                <input type="number" id="maxInput" class="min-max-input" placeholder="Max">
+            </div>
+
+            <button class="refresh-btn" onclick="applyFilters()">Refresh</button>
+        </div>
+
+        <!-- Order List Container -->
+        <div class="order-list" id="orderListContainer">
+            <!-- Dynamic Orders will populate here -->
+        </div>
+    </div>
+
+    <!-- USDT Section Content -->
+    <div id="usdtSection" class="usdt-section">
+        <div class="video-link-container" style="padding: 0 0 12px 0;">
+            <button class="video-link-btn" onclick="openVideoModal('How Buy Quota?', 'tutorial_usdt.mp4')">
+                <span>▶</span> How Buy Quota?
+            </button>
+        </div>
+
+        <div class="qr-wrapper">
+            <div class="qr-box" id="qrcode">
+                <div class="qr-logo">T</div>
+            </div>
+        </div>
+
+        <div class="wallet-box">
+            <div class="wallet-title">Wallet Address (TRC-20)</div>
+            <div class="wallet-row">
+                <div class="wallet-address" id="walletAddressText">TPEZNGTZ1V4axhTindnRHG1L7J6wZDbuX</div>
+            <button class="copy-btn" onclick="copyWalletAddress()">📋</button>   
+            </div>
+        </div>
+
+        <div class="network-fee-box">
+            <span style="font-size: 16px;">⚠️</span>
+            <span>You pay network fee.</span>
+        </div>
+
+        <div class="calculator-card">
+            <div class="calc-header">
+                <span>Calculator</span>
+                <span>Ratio: 1 USDT = 107 INR</span>
+            </div>
+            <input type="number" id="usdtInput" class="calc-input" placeholder="Enter USDT amount" oninput="calculateUsdt()">
+            <div class="calc-results" id="calcResultsText">
+                Estimated bonus: 0(2%) INR<br>
+                Total: 0 INR
+            </div>
+        </div>
+
+        <div class="deposit-note">
+            * After the recharge is completed, please wait 3-5 minutes for the deposit to arrive.
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <div class="nav-bar">
+        <a href="dashboard.html" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Home</span>
+        </a>
+        <a href="deposit.html" class="nav-item active">
+            <span class="nav-icon">⇄</span>
+            <span class="nav-text">Deposit</span>
+        </a>
+        <a href="bank.html" class="nav-item">
+            <span class="nav-icon">💼</span>
+            <span class="nav-text">BANK</span>
+        </a>
+        <a href="team.html" class="nav-item">
+            <span class="nav-icon">👥</span>
+            <span class="nav-text">Team</span>
+        </a>
+        <a href="me.html" class="nav-item">
+            <span class="nav-icon">💬</span>
+            <span class="nav-text">Me</span>
+        </a>
+    </div>
+
+    <!-- UPI Selection Modal -->
+    <div class="modal" id="upiModal">
+        <div class="modal-content">
+            <div class="modal-header">Select UPI to Proceed</div>
+            <div class="upi-option-list" id="upiOptionList">
+                <div class="upi-option-item" onclick="selectUpiItem(this)">freecharge </div>
+                <div class="upi-option-item" onclick="selectUpiItem(this)">PhonePe </div>
+                <div class="upi-option-item" onclick="selectUpiItem(this)">Paytm </div>
+                <div class="upi-option-item" onclick="selectUpiItem(this)">BHIM  </div>
+                <div class="upi-option-item" onclick="selectUpiItem(this)">Navi </div>
+                <div class="upi-option-item" onclick="selectUpiItem(this)">Mobikwik  </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn btn-cancel" onclick="closeUpiModal()">Cancel</button>
+                <button class="modal-btn btn-confirm" onclick="confirmUpiSelection()">Confirm & Pay</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Modal -->
+    <div class="modal" id="videoModal">
+        <div class="modal-content" style="max-width: 400px; padding: 15px;">
+            <div class="modal-header" id="videoModalTitle">Video Tutorial</div>
+            <div style="background:#000; border-radius:8px; height:200px; display:flex; align-items:center; justify-content:center; margin-bottom:15px;">
+                <video id="tutorialVideo" controls style="width:100%; height:100%; border-radius:8px;">
+                    <source src="" id="videoSource" type="video/mp4">
+                    Video not supported
+                </video>
+            </div>
+            <button class="modal-btn btn-cancel" onclick="closeVideoModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Tab Switcher
+        function switchTab(tab) {
+            document.querySelectorAll('.top-tab').forEach(t => t.classList.remove('active'));
+            if(tab === 'inr') {
+                document.querySelectorAll('.top-tab')[0].classList.add('active');
+                document.getElementById('inrSection').style.display = 'block';
+                document.getElementById('usdtSection').style.display = 'none';
+            } else {
+                document.querySelectorAll('.top-tab')[1].classList.add('active');
+                document.getElementById('inrSection').style.display = 'none';
+                document.getElementById('usdtSection').style.display = 'block';
+                generateDynamicQR();
+            }
+        }
+
+        // Generate Dynamic QR Code based on permanent wallet address
+        function generateDynamicQR() {
+            const container = document.getElementById('qrcode');
+            // Clear previous QR if any
+            const existingImg = container.querySelector('img');
+            if(existingImg) existingImg.remove();
+            const existingCanvas = container.querySelector('canvas');
+            if(existingCanvas) existingCanvas.remove();
+
+            const walletAddr = document.getElementById('walletAddressText').innerText;
+            new QRCode(container, {
+                text: walletAddr,
+                width: 140,
+                height: 140,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        }
+
+        // Copy Wallet Address
+        function copyWalletAddress() {
+            const addr = document.getElementById('walletAddressText').innerText;
+            navigator.clipboard.writeText(addr).then(() => {
+                alert('Wallet address copied to clipboard!');
+            });
+        }
+
+        // Live USDT Calculator
+        function calculateUsdt() {
+            const val = parseFloat(document.getElementById('usdtInput').value) || 0;
+            const inrValue = val * 107;
+            const bonus = Math.round(inrValue * 0.02);
+            const total = Math.round(inrValue + bonus);
+            document.getElementById('calcResultsText').innerHTML = `Estimated bonus: ${bonus}(2%) INR<br>Total: ${total} INR`;
+        }
+
+        // Dropdown Toggle for Filters
+        function toggleDropdown() {
+            const menu = document.getElementById('dropdownMenu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        let currentSort = 'low-high';
+        function setSortOrder(order) {
+            currentSort = order;
+            document.getElementById('selectedFilterText').innerText = (order === 'low-high') ? 'From low to high' : 'High to low';
+            document.getElementById('dropdownMenu').style.display = 'none';
+            applyFilters();
+        }
+
+        // Generate 1000 Demo Orders ranging from 200 to 50000 INR
+        let demoOrders = [];
+        for (let i = 0; i < 1000; i++) {
+            // Generate ascending values primarily, distributed up to 50000
+            let amount = 200 + Math.floor((i / 999) * 49800);
+            // Add slight variation for variety
+            amount = Math.round(amount / 100) * 100;
+            if(amount < 200) amount = 200;
+            if(amount > 50000) amount = 50000;
+            
+            let income = Math.round(amount * 0.04);
+            let quota = amount + Math.round(amount * 0.04);
+            demoOrders.push({ amount, income, quota });
+        }
+
+        // Render Orders Function with Filtering and Sorting
+        function renderOrders(filteredData) {
+            const container = document.getElementById('orderListContainer');
+            container.innerHTML = '';
+            
+            if(filteredData.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">No orders found matching criteria.</div>';
+                return;
+            }
+
+            filteredData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'order-card';
+                card.innerHTML = `
+                    <div class="order-info">
+                        <h3>${item.amount} INR</h3>
+                        <div class="order-details">
+                            <div class="detail-item">
+                                <span class="label">Income</span><br>
+                                <span class="val">${item.income} (4%)</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">Quota</span><br>
+                                <span class="quota-val">+${item.quota}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="buy-btn" onclick="openUpiModal('${item.amount}')">Buy</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Apply Filters and Search
+        function applyFilters() {
+            let min = parseFloat(document.getElementById('minInput').value) || 0;
+            let max = parseFloat(document.getElementById('maxInput').value) || 999999;
+
+            let result = demoOrders.filter(o => o.amount >= min && o.amount <= max);
+
+            if(currentSort === 'low-high') {
+                result.sort((a, b) => a.amount - b.amount);
+            } else {
+                result.sort((a, b) => b.amount - a.amount);
+            }
+
+            renderOrders(result);
+        }
+
+        // UPI Modal Logic
+        let selectedOrderAmount = 0;
+        let selectedUpiString = '';
+
+        function openUpiModal(amount) {
+            selectedOrderAmount = amount;
+            document.getElementById('upiModal').style.display = 'flex';
+        }
+
+        function closeUpiModal() {
+            document.getElementById('upiModal').style.display = 'none';
+            selectedUpiString = '';
+            document.querySelectorAll('.upi-option-item').forEach(el => el.classList.remove('selected'));
+        }
+
+        function selectUpiItem(element) {
+            document.querySelectorAll('.upi-option-item').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedUpiString = element.innerText;
+        }
+
+        function confirmUpiSelection() {
+            if(!selectedUpiString) {
+                alert('Please select a UPI option to proceed.');
+                return;
+            }
+            // Redirect directly to tasks_details.html with parameters
+            window.location.href = `tasks_details.html?amount=${selectedOrderAmount}&upi=${encodeURIComponent(selectedUpiString)}`;
+        }
+
+        // Video Modal Logic
+        function openVideoModal(title, filename) {
+            document.getElementById('videoModalTitle').innerText = title;
+            const vid = document.getElementById('tutorialVideo');
+            const source = document.getElementById('videoSource');
+            source.src = filename;
+            vid.load();
+            document.getElementById('videoModal').style.display = 'flex';
+            vid.play();
+        }
+
+        function closeVideoModal() {
+            const vid = document.getElementById('tutorialVideo');
+            vid.pause();
+            document.getElementById('videoModal').style.display = 'none';
+        }
+
+        // Initial Load
+        window.onload = function() {
+            renderOrders(demoOrders);
+        }
+    </script>
+</body>
+</html>

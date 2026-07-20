@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Pay - Recharge History</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background-color: #f7f9fa;
+            color: #333;
+            padding-bottom: 40px;
+        }
+        .header-bar {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background: #fff;
+            border-bottom: 1px solid #f1f5f9;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .back-btn {
+            font-size: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #0f172a;
+            margin-right: 15px;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        /* Currency Switcher (USDT / INR) */
+        .currency-tabs {
+            display: flex;
+            gap: 25px;
+            padding: 15px 20px;
+            background: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            color: #94a3b8;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+        }
+        .currency-tab.active {
+            color: #0f172a;
+            position: relative;
+        }
+        .currency-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #0f172a;
+        }
+        /* Status Filter Tabs (All, In Payment, Success, Timeout) */
+        .status-tabs {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: #fff;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .status-tab {
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            padding-bottom: 5px;
+        }
+        .status-tab.active {
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+        }
+        /* Banner Notification */
+        .notice-banner {
+            background: #f1f5f9;
+            margin: 15px 20px;
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-size: 13px;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        /* History Item Card */
+        .history-card {
+            background: #fff;
+            margin: 0 20px 15px 20px;
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .amount-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .status-badge {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+        .badge-in-payment {
+            background: #ffedd5;
+            color: #c2410c;
+        }
+        .badge-success {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .badge-timeout {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .card-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #64748b;
+            border-top: 1px solid #f8fafc;
+            padding-top: 10px;
+        }
+        .income-val {
+            color: #0f172a;
+            font-weight: 600;
+        }
+        .quota-val {
+            color: #0d9488;
+            font-weight: 600;
+        }
+        .utr-val {
+            color: #475569;
+            font-weight: 500;
+        }
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <a href="deposit.html" class="back-btn">&lt;</a>
+        <div class="header-title">Recharge History</div>
+    </div>
+
+    <!-- Currency Selector (USDT / INR) -->
+    <div class="currency-tabs">
+        <div class="currency-tab" id="usdtTabBtn" onclick="switchCurrency('USDT', this)">USDT</div>
+        <div class="currency-tab active" id="inrTabBtn" onclick="switchCurrency('INR', this)">INR</div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="status-tabs">
+        <div class="status-tab active" onclick="filterHistory('All', this)">All</div>
+        <div class="status-tab" onclick="filterHistory('In Payment', this)">In Payment</div>
+        <div class="status-tab" onclick="filterHistory('Success', this)">Success</div>
+        <div class="status-tab" onclick="filterHistory('Timeout', this)">Timeout</div>
+    </div>
+
+    <!-- Notice Banner -->
+    <div class="notice-banner">
+        <span>🪙</span> Complete a task to earn Commission and Bonus
+    </div>
+
+    <!-- History List Container -->
+    <div id="historyListContainer">
+        <!-- Dynamic items will load here -->
+    </div>
+
+    <script>
+        let currentCurrency = 'INR';
+        let currentStatusFilter = 'All';
+
+        // लोकल स्टोरेज से डेटा लोड करना (INR और USDT अलग-अलग)
+        let inrHistoryData = JSON.parse(localStorage.getItem('rechargeHistory_INR') || '[]');
+        let usdtHistoryData = JSON.parse(localStorage.getItem('rechargeHistory_USDT') || '[]');
+
+        // अगर INR डेटा खाली हो तो डिफ़ॉल्ट एंट्री डालना
+        if (inrHistoryData.length === 0) {
+            inrHistoryData = [
+                {
+                    amount: '900',
+                    income: 36,
+                    quota: 936,
+                    utr: '618718286391',
+                    status: 'In Payment',
+                    time: new Date().toISOString()
+                }
+            ];
+            localStorage.setItem('rechargeHistory_INR', JSON.stringify(inrHistoryData));
+        }
+
+        // अगर USDT डेटा खाली हो तो डिफ़ॉल्ट एंट्री डालना ताकि टैब काम करता दिखे
+        if (usdtHistoryData.length === 0) {
+            usdtHistoryData = [
+                {
+                    amount: '50 USDT',
+                    income: '2 USDT',
+                    quota: '52 USDT',
+                    utr: 'TX9823475612',
+                    status: 'Success',
+                    time: new Date().toISOString()
+                }
+            ];
+            localStorage.setItem('rechargeHistory_USDT', JSON.stringify(usdtHistoryData));
+        }
+
+        function switchCurrency(currency, element) {
+            currentCurrency = currency;
+            document.querySelectorAll('.currency-tab').forEach(tab => tab.classList.remove('active'));
+            element.classList.add('active');
+            renderHistory(currentStatusFilter);
+        }
+
+        function renderHistory(filterStatus) {
+            currentStatusFilter = filterStatus;
+            const container = document.getElementById('historyListContainer');
+            container.innerHTML = '';
+
+            let activeData = (currentCurrency === 'INR') ? inrHistoryData : usdtHistoryData;
+
+            let filtered = activeData;
+            if (filterStatus !== 'All') {
+                filtered = activeData.filter(item => item.status === filterStatus);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="no-data">No ${currentCurrency} history found</div>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                let badgeClass = 'badge-in-payment';
+                if (item.status === 'Success') badgeClass = 'badge-success';
+                if (item.status === 'Timeout' || item.status === 'Cancelled') badgeClass = 'badge-timeout';
+
+                let currencyLabel = (currentCurrency === 'INR') ? ' RS' : '';
+
+                let cardHTML = `
+                    <div class="history-card">
+                        <div class="card-top">
+                            <span class="amount-text">${item.amount}${currencyLabel}</span>
+                            <span class="status-badge ${badgeClass}">${item.status}</span>
+                        </div>
+                        <div class="card-details">
+                            <div>
+                                <span style="display:block; font-size:11px;">Income</span>
+                                <span class="income-val">${item.income}</span>
+                            </div>
+                            <div>
+                                <span style="display:block; font-size:11px;">Quota</span>
+                                <span class="quota-val">+${item.quota}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="display:block; font-size:11px;">UTR / Txn ID</span>
+                                <span class="utr-val">${currentCurrency === 'INR' ? 'UTR:' : 'Txn:'}${item.utr}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            });
+        }
+
+        function filterHistory(status, element) {
+            document.querySelectorAll('.status-tab').forEach(tab => tab.classList.remove('active'));
+            element.classList.add('active');
+            renderHistory(status);
+        }
+
+        // पेज लोड होते ही डिफ़ॉल्ट INR डेटा दिखाना
+        renderHistory('All');
+    </script>
+</body>
+</html>

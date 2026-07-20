@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tata Pay - Team & Token History</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background-color: #f7f9fa;
+            color: #333;
+            padding-bottom: 90px;
+        }
+        .header {
+            padding: 15px 20px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #111;
+            background-color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-btn-top {
+            font-size: 13px;
+            background: #f1f5f9;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #0f172a;
+            font-weight: 600;
+            border: none;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* Team Top Dark Card */
+        .team-banner-card {
+            background: #18181b;
+            margin: 15px 20px;
+            border-radius: 16px;
+            padding: 20px;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .team-top-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        .team-stat-item {
+            flex: 1;
+        }
+        .team-stat-item:last-child {
+            text-align: right;
+        }
+        .team-stat-title {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .team-stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .team-members-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
+        /* Invite Code Box */
+        .invite-section {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+        .invite-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+        .invite-box {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .invite-link-text {
+            font-size: 12px;
+            color: #475569;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 10px;
+            font-family: monospace;
+        }
+        .copy-btn {
+            background: #f1f5f9;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #334155;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .copy-btn:hover {
+            background: #e2e8f0;
+        }
+
+        /* Team Detail Section */
+        .section-container {
+            padding: 0 20px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 12px;
+        }
+        .team-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .team-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            cursor: pointer;
+            border: 1px solid #f1f5f9;
+            transition: background 0.2s;
+        }
+        .team-card:hover {
+            background: #fafafa;
+        }
+        .team-card-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .team-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0f766e, #164e63);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: bold;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.2);
+            flex-shrink: 0;
+        }
+        .team-card-info h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        .team-card-info p {
+            font-size: 12px;
+            color: #64748b;
+        }
+        .team-card-right {
+            text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .team-card-stats div:first-child {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 3px;
+        }
+        .team-card-stats div:last-child {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .arrow-icon {
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+
+        /* Team Info Sub-Screen Header */
+        .sub-header {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 15px;
+            color: #0f172a;
+        }
+        .sub-header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .current-phone-bar {
+            background: #f1f5f9;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: #64748b;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .current-phone-val {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* Token History Card Styling */
+        .history-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-info h5 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 3px;
+        }
+        .history-info p {
+            font-size: 11px;
+            color: #64748b;
+        }
+        .history-amount {
+            font-size: 14px;
+            font-weight: 700;
+            color: #16a34a; /* Green for Commission */
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-top: 1px solid #e2e8f0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+            z-index: 1000;
+        }
+        .nav-item {
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: #94a3b8;
+            flex: 1;
+        }
+        .nav-item.active {
+            color: #0f172a;
+        }
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 3px;
+            display: block;
+        }
+        .nav-text {
+            font-size: 11px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Team Screen -->
+    <div id="teamMainScreen" class="screen active">
+        <div class="header">
+            <span>Team</span>
+            <button class="history-btn-top" onclick="openTokenHistory()">Token History</button>
+        </div>
+
+        <!-- Top Dark Banner Card -->
+        <div class="team-banner-card">
+            <div class="team-top-stats">
+                <div class="team-stat-item">
+                    <div class="team-stat-title">Commission</div>
+                    <div id="totalCommissionVal" class="team-stat-value">13386.49</div>
+                </div>
+                <div class="team-stat-item">
+                    <div class="team-stat-title">Team Recharge</div>
+                    <div class="team-stat-value">4424286.04</div>
+                </div>
+            </div>
+            <div class="team-members-row">
+                <i class="fas fa-user text-xs"></i>
+                <span id="totalMembersCount">158</span>
+            </div>
+        </div>
+
+        <!-- Invite Code Section -->
+        <div class="invite-section">
+            <div class="invite-title">Invite Code</div>
+            <div class="invite-box">
+                <span id="inviteLinkText" class="invite-link-text">Loading link...</span>
+                <button class="copy-btn" onclick="copyInviteLink()">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Team Detail Section -->
+        <div class="section-container">
+            <div class="section-title">Team Detail</div>
+            <div id="teamListContainer" class="team-list">
+                <!-- JavaScript से डायनेमिक लोड होगा -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Info Sub-Screen -->
+    <div id="teamInfoScreen" class="screen">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeTeamInfo()"><i class="fas fa-arrow-left"></i></button>
+            <div class="sub-header-title">Team Info</div>
+        </div>
+        <div class="current-phone-bar">
+            <span>Current Phone</span>
+            <span id="currentInspectPhone" class="current-phone-val">--</span>
+        </div>
+        <div class="section-container" style="padding-top: 15px;">
+            <div id="subTeamListContainer" class="team-list">
+                <!-- सब-मेंबर्स यहाँ आएंगे -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Token History Screen -->
+    <div id="tokenHistoryScreen" class="screen">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeTokenHistory()"><i class="fas fa-arrow-left"></i></button>
+            <div class="sub-header-title">Token History</div>
+        </div>
+        <div class="section-container" style="padding-top: 15px;">
+            <div class="section-title" style="font-size: 15px;">Commission Logs (5% Multi-level)</div>
+            <div id="tokenHistoryContainer" class="team-list">
+                <!-- कमीशन हिस्ट्री यहाँ शो होगी -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <div class="nav-bar">
+        <a href="dashboard.html" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Home</span>
+        </a>
+        <a href="deposit.html" class="nav-item">
+            <span class="nav-icon">⇄</span>
+            <span class="nav-text">Deposit</span>
+        </a>
+        <a href="bank.html" class="nav-item">
+            <span class="nav-icon">💼</span>
+            <span class="nav-text">BANK</span>
+        </a>
+        <a href="team.html" class="nav-item active">
+            <span class="nav-icon">👥</span>
+            <span class="nav-text">Team</span>
+        </a>
+        <a href="me.html" class="nav-item">
+            <span class="nav-icon">💬</span>
+            <span class="nav-text">Me</span>
+        </a>
+    </div>
+
+    <script>
+        // 1. इनवाइट लिंक जनरेशन लॉजिक
+        const userPermanentCode = "tata98627"; 
+        const hostname = window.location.hostname || "localhost";
+        const port = window.location.port ? ":" + window.location.port : "";
+        
+        let fullInviteLink = "";
+        if (hostname === "localhost" || hostname === "127.0.0.1") {
+            fullInviteLink = `http://${hostname}${port}/regist.html?code=${userPermanentCode}`;
+        } else {
+            fullInviteLink = `https://${hostname}/regist?code=${userPermanentCode}`;
+        }
+        
+        document.getElementById("inviteLinkText").innerText = fullInviteLink;
+
+        function copyInviteLink() {
+            navigator.clipboard.writeText(fullInviteLink).then(() => {
+                alert("Invite link copied successfully!");
+            });
+        }
+
+        // 2. मल्टी-लेवल टीम डेटा स्ट्रक्चर (मेंबर 1 -> मेंबर 2 -> मेंबर 3 चेन)
+        const teamData = [
+            {
+                phone: "897****7688", // मेंबर 1 (सीनियर्स में सबसे ऊपर)
+                recharge: 5000,
+                comm: "230.04",
+                membersCount: 7,
+                subMembers: [
+                    { 
+                        phone: "848****8388", // मेंबर 2 (मेंबर 1 के नीचे)
+                        recharge: 3000, 
+                        comm: "150.00",
+                        subMembers: [
+                            { phone: "936****7220", recharge: 2000, comm: "100.00" } // मेंबर 3 (मेंबर 2 के नीचे)
+                        ]
+                    },
+                    { phone: "700****1354", recharge: 0, comm: "0.6", subMembers: [] },
+                    { phone: "825****1402", recharge: 0, comm: "22.59", subMembers: [] }
+                ]
+            },
+            {
+                phone: "986****1214",
+                recharge: 10000,
+                comm: "819.38",
+                membersCount: 12,
+                subMembers: [
+                    { phone: "912****4321", recharge: 1500, comm: "45.00", subMembers: [] }
+                ]
+            }
+        ];
+
+        // 3. टोकन हिस्ट्री (कमीशन लॉग्स - मल्टी लेवल 5% रूल के साथ)
+        const tokenHistoryData = [
+            { member: "936****7220 (Member 3)", orderAmount: "2000.00", level: "Level 2 Up (Member 2 & 1)", commission: "+100.00 (5%)", time: "2026-06-07 14:30" },
+            { member: "848****8388 (Member 2)", orderAmount: "3000.00", level: "Level 1 Up (Member 1)", commission: "+150.00 (5%)", time: "2026-06-06 11:15" },
+            { member: "912****4321", orderAmount: "1500.00", level: "Direct Referral", commission: "+75.00 (5%)", time: "2026-06-05 09:40" }
+        ];
+
+        function renderTeamList() {
+            const container = document.getElementById("teamListContainer");
+            container.innerHTML = "";
+
+            teamData.forEach((member, index) => {
+                const card = document.createElement("div");
+                card.className = "team-card";
+                card.onclick = () => openTeamInfo(index);
+
+                card.innerHTML = `
+                    <div class="team-card-left">
+                        <div class="team-avatar">
+                            <i class="fas fa-wave-square text-xs"></i>
+                        </div>
+                        <div class="team-card-info">
+                            <h4>Phone: ${member.phone}</h4>
+                            <p>Recharge: ${member.recharge}</p>
+                        </div>
+                    </div>
+                    <div class="team-card-right">
+                        <div class="team-card-stats">
+                            <div><i class="fas fa-user text-[10px]"></i> ${member.membersCount}</div>
+                            <div>Comm: ${member.comm}</div>
+                        </div>
+                        <div class="arrow-icon">&gt;</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // टीम इन्फो और सब-मेंबर्स दिखाने का फंक्शन (चेन लॉजिक के साथ)
+        function openTeamInfo(index) {
+            const member = teamData[index];
+            document.getElementById("currentInspectPhone").innerText = member.phone;
+
+            const subContainer = document.getElementById("subTeamListContainer");
+            subContainer.innerHTML = "";
+
+            if (!member.subMembers || member.subMembers.length === 0) {
+                subContainer.innerHTML = `<div style="text-align: center; color: #94a3b8; padding: 40px 0; font-size: 13px;">No sub-members found</div>`;
+            } else {
+                member.subMembers.forEach(sub => {
+                    const subCard = document.createElement("div");
+                    subCard.className = "team-card";
+                    subCard.style.cursor = "default";
+                    subCard.innerHTML = `
+                        <div class="team-card-left">
+                            <div class="team-avatar" style="width: 38px; height: 38px;"></div>
+                            <div class="team-card-info">
+                                <h4 style="font-size: 13px;">Phone: ${sub.phone}</h4>
+                                <p style="font-size: 11px;">Recharge: ${sub.recharge}</p>
+                            </div>
+                        </div>
+                        <div class="team-card-right">
+                            <div class="team-card-stats">
+                                <div style="color: transparent;">-</div>
+                                <div style="font-size: 12px;">Comm: ${sub.comm}</div>
+                            </div>
+                        </div>
+                    `;
+                    subContainer.appendChild(subCard);
+                });
+            }
+
+            document.getElementById("teamMainScreen").classList.remove("active");
+            document.getElementById("teamInfoScreen").classList.add("active");
+            window.scrollTo(0, 0);
+        }
+
+        function closeTeamInfo() {
+            document.getElementById("teamInfoScreen").classList.remove("active");
+            document.getElementById("teamMainScreen").classList.add("active");
+            window.scrollTo(0, 0);
+        }
+
+        // Token History स्क्रीन खोलने और बंद करने के फंक्शन्स
+        function openTokenHistory() {
+            const historyContainer = document.getElementById("tokenHistoryContainer");
+            historyContainer.innerHTML = "";
+
+            tokenHistoryData.forEach(item => {
+                const historyCard = document.createElement("div");
+                historyCard.className = "history-card";
+                historyCard.innerHTML = `
+                    <div class="history-info">
+                        <h5>Order By: ${item.member}</h5>
+                        <p>Chain: ${item.level} | Time: ${item.time}</p>
+                    </div>
+                    <div class="history-amount">
+                        ${item.commission}
+                    </div>
+                `;
+                historyContainer.appendChild(historyCard);
+            });
+
+            document.getElementById("teamMainScreen").classList.remove("active");
+            document.getElementById("tokenHistoryScreen").classList.add("active");
+            window.scrollTo(0, 0);
+        }
+
+        function closeTokenHistory() {
+            document.getElementById("tokenHistoryScreen").classList.remove("active");
+            document.getElementById("teamMainScreen").classList.add("active");
+            window.scrollTo(0, 0);
+        }
+
+        renderTeamList();
+    </script>
+</body>
+</html>

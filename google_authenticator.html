@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Google Authentication</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background-color: #f7f9fa;
+            color: #333;
+            padding-bottom: 40px;
+        }
+        .sub-header {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 15px;
+            color: #0f172a;
+        }
+        .sub-header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .content-box {
+            padding: 20px;
+            max-width: 480px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .ga-logo {
+            font-size: 36px;
+            margin: 15px 0 10px 0;
+            color: #4285F4;
+        }
+        .instructions {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .qr-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        .qr-img {
+            width: 180px;
+            height: 180px;
+            object-fit: contain;
+        }
+        .download-btn {
+            background-color: #fb923c;
+            color: #fff;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(251, 146, 60, 0.3);
+        }
+        .key-box {
+            background: #fff;
+            padding: 12px 15px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        .key-text {
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: 0.5px;
+            word-break: break-all;
+            text-align: left;
+        }
+        .copy-icon {
+            cursor: pointer;
+            color: #64748b;
+            font-size: 16px;
+            padding: 5px;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 15px;
+            margin-bottom: 25px;
+        }
+        .input-label {
+            font-weight: 600;
+            color: #0f172a;
+            margin-right: 15px;
+            font-size: 15px;
+        }
+        .code-input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 15px;
+            color: #0f172a;
+            background: transparent;
+        }
+        .code-input::placeholder {
+            color: #cbd5e1;
+        }
+        .bind-btn {
+            background-color: #64748b;
+            color: #fff;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .bind-btn.active {
+            background-color: #334155;
+        }
+        /* Bound Success State */
+        .success-banner {
+            background-color: #ecfdf5;
+            color: #059669;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            border: 1px solid #10b981;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sub Header with Back Arrow -->
+    <div class="sub-header">
+        <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i></button>
+        <div class="sub-header-title" id="txtTitle">Google Authentication</div>
+    </div>
+
+    <div class="content-box">
+        <!-- Logo / Icon -->
+        <div class="ga-logo">
+            <i class="fa-solid fa-shield-halved"></i>
+        </div>
+
+        <!-- Success Banner (Shows when bound) -->
+        <div id="successBanner" class="success-banner">
+            Google Authenticator has been bound
+        </div>
+
+        <!-- Unbound Section (QR & Key) -->
+        <div id="unboundSection">
+            <div class="instructions" id="txtInstruction">
+                Scan the QR code with Google Authenticator app or enter the key manually
+            </div>
+
+            <div class="qr-card">
+                <img id="qrImage" src="" alt="QR Code" class="qr-img">
+            </div>
+
+            <button class="download-btn" onclick="window.open('https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2', '_blank')" id="txtDownloadBtn">
+                Download Google Authenticator
+            </button>
+
+            <div class="key-box">
+                <span style="color: #64748b;">Key:</span>
+                <span class="key-text" id="secretKeyText">I5S3IVHC2R44ZHKD7CNNZGNLJWQGJC4</span>
+                <i class="far fa-clone copy-icon" onclick="copyKey()" title="Copy Key"></i>
+            </div>
+        </div>
+
+        <!-- Code Input & Bind Button -->
+        <div class="input-group" id="inputGroupContainer">
+            <span class="input-label" id="txtCodeLabel">Code:</span>
+            <input type="text" id="authCodeInput" class="code-input" placeholder="Enter Google Authenticator code" maxlength="6">
+        </div>
+
+        <button class="bind-btn active" id="bindBtn" onclick="handleBind()">Bind</button>
+    </div>
+
+    <script>
+        // बैक जाने का फंक्शन (जहाँ से आया है वहीं रीडायरेक्ट करेगा)
+        function goBack() {
+            if (document.referrer && document.referrer.includes(window.location.hostname)) {
+                history.back();
+            } else {
+                window.location.href = "me.html"; // डिफ़ॉल्ट रूप से 'me.html' पर ले जाएगा
+            }
+        }
+
+        // हर यूजर के लिए अलग और यूनिक सीक्रेट की जनरेट करने का लॉजिक
+        function generateUniqueKey() {
+            let existingKey = localStorage.getItem("tata_ga_key");
+            if (!existingKey) {
+                const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ273456";
+                let key = "";
+                for (let i = 0; i < 32; i++) {
+                    key += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                localStorage.setItem("tata_ga_key", key);
+                existingKey = key;
+            }
+            return existingKey;
+        }
+
+        const userSecretKey = generateUniqueKey();
+        document.getElementById("secretKeyText").innerText = userSecretKey;
+
+        // फ्री API से यूनिक की के आधार पर QR कोड जनरेट करना
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=otpauth://totp/TataPay:User?secret=${userSecretKey}&issuer=TataPay`;
+        document.getElementById("qrImage").src = qrUrl;
+
+        // चेक करें कि क्या पहले से बाइंड है या नहीं
+        let isBound = localStorage.getItem("tata_ga_bound") === "true";
+        if (isBound) {
+            showBoundState();
+        }
+
+        function copyKey() {
+            navigator.clipboard.writeText(userSecretKey);
+            alert("Secret Key copied to clipboard!");
+        }
+
+        function handleBind() {
+            let code = document.getElementById("authCodeInput").value.trim();
+            if (code.length !== 6) {
+                alert("Please enter a valid 6-digit Google Authenticator code.");
+                return;
+            }
+
+            // यहाँ सक्सेसफुल बाइंडिंग प्रक्रिया
+            localStorage.setItem("tata_ga_bound", "true");
+            showBoundState();
+            alert("Google Authenticator bound successfully!");
+        }
+
+        function showBoundState() {
+            document.getElementById("unboundSection").style.display = "none";
+            document.getElementById("inputGroupContainer").style.display = "none";
+            document.getElementById("bindBtn").style.display = "none";
+            document.getElementById("successBanner").style.display = "block";
+        }
+    </script>
+</body>
+</html>

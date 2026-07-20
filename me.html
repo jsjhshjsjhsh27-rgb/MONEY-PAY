@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Tata Pay - Me</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background-color: #f7f9fa;
+            color: #333;
+            padding-bottom: 90px;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* Top Bar with Language Toggle */
+        .top-lang-bar {
+            background: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: flex-end;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .lang-switch-btn {
+            background: #0f172a;
+            color: #fff;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Top Edit Profile Section */
+        .edit-profile-header {
+            padding: 14px 20px 4px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #111;
+            background: #fff;
+        }
+        .edit-profile-header i:first-child {
+            font-size: 18px;
+            color: #475569;
+        }
+        .edit-profile-header .dropdown-arrow {
+            font-size: 14px;
+            color: #475569;
+        }
+
+        /* ID Section */
+        .id-section {
+            background: #fff;
+            padding: 0 20px 14px 20px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #111;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        /* Quota Card */
+        .quota-card {
+            background: #fff;
+            margin: 15px 20px;
+            border-radius: 16px;
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .quota-title {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 4px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .quota-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .quota-sub {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        .topup-btn {
+            background-color: #000;
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Banner Container */
+        .banner-container {
+            padding: 0 20px 15px 20px;
+        }
+        .banner-img {
+            width: 100%;
+            height: 90px;
+            border-radius: 16px;
+            object-fit: cover;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            cursor: pointer;
+        }
+
+        /* Menu Options List */
+        .menu-list {
+            background: #fff;
+            margin: 0 20px;
+            border-radius: 16px;
+            padding: 5px 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .menu-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 5px;
+            border-bottom: 1px solid #f8fafc;
+            cursor: pointer;
+        }
+        .menu-row:last-child {
+            border-bottom: none;
+        }
+        .menu-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #1e293b;
+        }
+        .menu-left i {
+            font-size: 16px;
+            color: #475569;
+            width: 20px;
+            text-align: center;
+        }
+        .menu-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #64748b;
+        }
+        .menu-arrow {
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+
+        /* Sub-Screens Header */
+        .sub-header {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 15px;
+            color: #0f172a;
+        }
+        .sub-header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* Account Info Styles */
+        .account-box {
+            background: #fff;
+            margin: 15px 20px;
+            border-radius: 16px;
+            padding: 5px 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .account-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 5px;
+            border-bottom: 1px solid #f8fafc;
+            font-size: 14px;
+        }
+        .account-row:last-child { border-bottom: none; }
+        .avatar-container {
+            text-align: center;
+            padding: 25px 0 10px 0;
+        }
+        .avatar-circle {
+            width: 80px;
+            height: 80px;
+            background: #475569;
+            border-radius: 50%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 36px;
+        }
+
+        /* Bottom Sheets & Modals */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: flex-end;
+        }
+        .bottom-sheet {
+            background: #fff;
+            width: 100%;
+            max-width: 414px;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            padding: 25px 20px 40px 20px;
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .sheet-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #0f172a;
+        }
+        .contact-options {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .contact-item {
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: #1e293b;
+        }
+        .contact-item img {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 8px;
+            border-radius: 50%;
+        }
+
+        /* Center Dialog (Logout) */
+        .center-dialog-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .dialog-box {
+            background: #fff;
+            width: 85%;
+            max-width: 320px;
+            border-radius: 20px;
+            padding: 24px 20px;
+            text-align: center;
+        }
+        .dialog-text {
+            font-size: 15px;
+            color: #334155;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .dialog-btns {
+            display: flex;
+            border-top: 1px solid #f1f5f9;
+        }
+        .dialog-btns button {
+            flex: 1;
+            padding: 14px 0;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-cancel { color: #64748b; border-right: 1px solid #f1f5f9; }
+        .btn-confirm { color: #0f172a; }
+
+        /* Navigation Bar */
+        .nav-bar {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background: #fff;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-top: 1px solid #e2e8f0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+            z-index: 1000;
+        }
+        .nav-item {
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: #94a3b8;
+            flex: 1;
+        }
+        .nav-item.active { color: #0f172a; }
+        .nav-icon { font-size: 20px; margin-bottom: 3px; display: block; }
+        .nav-text { font-size: 11px; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+    <!-- Language Toggle Top Bar -->
+    <div class="top-lang-bar">
+        <button class="lang-switch-btn" onclick="toggleLanguage()" id="langToggleBtn">हिन्दी में बदलें</button>
+    </div>
+
+    <!-- 1. MAIN ME SCREEN -->
+    <div id="meMainScreen" class="screen active">
+        <!-- Edit Profile Header -->
+        <div class="edit-profile-header" onclick="openAccountInfo()">
+            <i class="fas fa-user"></i>
+            <span id="txtEditProfile">Edit profile</span>
+            <i class="fas fa-chevron-down dropdown-arrow"></i>
+        </div>
+        <!-- ID Section -->
+        <div class="id-section" id="displayUserId">ID: 10001</div>
+
+        <!-- Quota Card -->
+        <div class="quota-card">
+            <div>
+                <div class="quota-title"><i class="fas fa-wallet text-xs"></i> <span id="txtQuota">Quota</span></div>
+                <div class="quota-value">674.22 <span style="font-size: 16px; font-weight: 600;">INR</span></div>
+                <div class="quota-sub" id="txtRewardRatio">Reward ratio 2%</div>
+            </div>
+            <button class="topup-btn" onclick="location.href='deposit.html'" id="txtTopUpBtn">Top up</button>
+        </div>
+
+        <!-- Banner Container -->
+        <div class="banner-container">
+            <img src="me_banner.png" alt="Invite Rewards" class="banner-img" onclick="location.href='team.html'">
+        </div>
+
+        <!-- Menu Options List -->
+        <div class="menu-list">
+            <div class="menu-row" onclick="location.href='recharge_history.html'">
+                <div class="menu-left"><i class="fas fa-clock-rotate-left"></i> <span id="txtRechargeHistory">Recharge History</span></div>
+                <div class="menu-right"><div class="menu-arrow">&gt;</div></div>
+            </div>
+
+            <div class="menu-row" onclick="location.href='token_history.html'">
+                <div class="menu-left"><i class="fas fa-file-lines"></i> <span id="txtTokenHistory">Token History</span></div>
+                <div class="menu-right"><div class="menu-arrow">&gt;</div></div>
+            </div>
+
+            <div class="menu-row" onclick="location.href='google_authenticator.html'">
+                <div class="menu-left"><i class="fas fa-key" style="color: #2563eb;"></i> <span id="txtGoogleAuth">Google Authentication</span></div>
+                <div class="menu-right"><div class="menu-arrow">&gt;</div></div>
+            </div>
+
+            <div class="menu-row" onclick="openContactUs()">
+                <div class="menu-left"><i class="fas fa-headset" style="color: #10b981;"></i> <span id="txtContactUs">Contact Us</span></div>
+                <div class="menu-right"><div class="menu-arrow">&gt;</div></div>
+            </div>
+
+            <div class="menu-row" onclick="openLogoutDialog()" style="border-bottom: none;">
+                <div class="menu-left"><i class="fas fa-right-from-bracket" style="color: #ef4444;"></i> <span id="txtSignOut">Sign Out</span></div>
+                <div class="menu-right"><div class="menu-arrow">&gt;</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. ACCOUNT INFO SCREEN -->
+    <div id="accountInfoScreen" class="screen">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeAccountInfo()"><i class="fas fa-arrow-left"></i></button>
+            <div class="sub-header-title" id="txtAccountInfoTitle">Account Info</div>
+        </div>
+        <div class="avatar-container">
+            <div class="avatar-circle"><i class="fas fa-user"></i></div>
+        </div>
+        <div class="account-box">
+            <div class="account-row">
+                <span style="color: #64748b;" id="txtInfoId">ID</span>
+                <span id="infoScreenId" style="font-weight: 700;">10001</span>
+            </div>
+            <div class="account-row">
+                <span style="color: #64748b;" id="txtInfoPhone">Phone</span>
+                <span style="font-weight: 700;">7628950634</span>
+            </div>
+            <div class="account-row" onclick="openChangePassword()" style="cursor: pointer;">
+                <span style="color: #64748b;" id="txtInfoPassword">Password</span>
+                <span style="color: #94a3b8;">****** &gt;</span>
+            </div>
+            <div class="account-row" onclick="openPinScreen()" style="cursor: pointer;">
+                <span style="color: #64748b;" id="txtInfoPin">PIN</span>
+                <span style="color: #94a3b8;">&gt;</span>
+            </div>
+            <div class="account-row" onclick="openResetPinScreen()" style="cursor: pointer; border-bottom: none;">
+                <span style="color: #64748b;" id="txtInfoResetPin">Reset PIN</span>
+                <span style="color: #94a3b8;">&gt;</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. CHANGE PASSWORD SCREEN -->
+    <div id="changePasswordScreen" class="screen">
+        <div class="sub-header">
+            <button class="back-btn" onclick="closeChangePassword()"><i class="fas fa-arrow-left"></i></button>
+            <div class="sub-header-title" id="txtChangePassTitle">Change Password</div>
+        </div>
+        <div style="padding: 20px;">
+            <input type="password" id="oldPassInput" placeholder="Old Password" style="width:100%; padding:14px; margin-bottom:15px; border:1px solid #e2e8f0; border-radius:10px;">
+            <input type="password" id="newPassInput" placeholder="New Password" style="width:100%; padding:14px; margin-bottom:15px; border:1px solid #e2e8f0; border-radius:10px;">
+            <input type="password" id="confirmPassInput" placeholder="Confirm" style="width:100%; padding:14px; margin-bottom:25px; border:1px solid #e2e8f0; border-radius:10px;">
+            <button style="width:100%; background:#000; color:#fff; padding:16px; border:none; border-radius:12px; font-weight:bold; cursor:pointer;" onclick="alert(isHindi ? 'पासवर्ड सफलतापूर्वक अपडेट हो गया!' : 'Password updated successfully!')" id="txtPassSubmitBtn">Submit</button>
+        </div>
+    </div>
+
+    <!-- 4. CONTACT US BOTTOM SHEET MODAL -->
+    <div id="contactModal" class="modal-overlay" onclick="closeContactUs(event)">
+        <div class="bottom-sheet" onclick="event.stopPropagation()">
+            <div class="sheet-title" id="txtContactUsModalTitle">Contact Us</div>
+            <div class="contact-options">
+                <a href="https://t.me/Moneypayvip" target="_blank" class="contact-item">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
+                    <div style="font-weight: 600; font-size: 14px;">Telegram</div>
+                </a>
+                <a href="https://wa.me/qr/DAOW6P3325AIG1" target="_blank" class="contact-item">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+                    <div style="font-weight: 600; font-size: 14px;">Whatsapp</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. SIGN OUT CONFIRMATION DIALOG -->
+    <div id="logoutDialog" class="center-dialog-overlay" onclick="closeLogoutDialog()">
+        <div class="dialog-box" onclick="event.stopPropagation()">
+            <div class="dialog-text" id="txtLogoutMsg">Logging out of the current account will suspend all functions. Are you sure you want to log out ?</div>
+            <div class="dialog-btns">
+                <button class="btn-cancel" onclick="closeLogoutDialog()" id="txtCancelBtn">Cancel</button>
+                <button class="btn-confirm" onclick="confirmLogout()" id="txtConfirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <div class="nav-bar">
+        <a href="dashboard.html" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text" id="navHome">Home</span>
+        </a>
+        <a href="deposit.html" class="nav-item">
+            <span class="nav-icon">⇄</span>
+            <span class="nav-text" id="navDeposit">Deposit</span>
+        </a>
+        <a href="bank.html" class="nav-item">
+            <span class="nav-icon">💼</span>
+            <span class="nav-text" id="navBank">UPI</span>
+        </a>
+        <a href="team.html" class="nav-item">
+            <span class="nav-icon">👥</span>
+            <span class="nav-text" id="navTeam">Team</span>
+        </a>
+        <a href="me.html" class="nav-item active">
+            <span class="nav-icon">💬</span>
+            <span class="nav-text" id="navMe">Me</span>
+        </a>
+    </div>
+
+    <script>
+        let currentUserId = localStorage.getItem("tata_user_id") || "10001";
+        document.getElementById("displayUserId").innerText = `ID: ${currentUserId}`;
+        document.getElementById("infoScreenId").innerText = currentUserId;
+
+        let isHindi = false;
+        const translations = {
+            en: {
+                pageTitle: "Tata Pay - Me",
+                langToggleBtn: "हिन्दी में बदलें",
+                editProfile: "Edit profile",
+                quota: "Quota",
+                rewardRatio: "Reward ratio 2%",
+                topUpBtn: "Top up",
+                rechargeHistory: "Recharge History",
+                tokenHistory: "Token History",
+                googleAuth: "Google Authentication",
+                contactUs: "Contact Us",
+                signOut: "Sign Out",
+                accountInfoTitle: "Account Info",
+                infoId: "ID",
+                infoPhone: "Phone",
+                infoPassword: "Password",
+                infoPin: "PIN",
+                infoResetPin: "Reset PIN",
+                changePassTitle: "Change Password",
+                oldPassPh: "Old Password",
+                newPassPh: "New Password",
+                confirmPassPh: "Confirm",
+                passSubmitBtn: "Submit",
+                contactUsModalTitle: "Contact Us",
+                logoutMsg: "Logging out of the current account will suspend all functions. Are you sure you want to log out ?",
+                cancelBtn: "Cancel",
+                confirmBtn: "Confirm",
+                navHome: "Home",
+                navDeposit: "Deposit",
+                navUpi: "UPI",
+                navTeam: "Team",
+                navMe: "Me"
+            },
+            hi: {
+                pageTitle: "टाटा पे - मी",
+                langToggleBtn: "Switch to English",
+                editProfile: "प्रोफाइल संपादित करें",
+                quota: "कोटा",
+                rewardRatio: "रिवार्ड अनुपात 2%",
+                topUpBtn: "टॉप अप",
+                rechargeHistory: "रिचार्ज इतिहास",
+                tokenHistory: "टोकन इतिहास",
+                googleAuth: "गूगल प्रमाणीकरण",
+                contactUs: "संपर्क करें",
+                signOut: "साइन आउट",
+                accountInfoTitle: "खाता जानकारी",
+                infoId: "आईडी",
+                infoPhone: "फ़ोन",
+                infoPassword: "पासवर्ड",
+                infoPin: "पिन",
+                infoResetPin: "पिन रीसेट करें",
+                changePassTitle: "पासवर्ड बदलें",
+                oldPassPh: "पुराना पासवर्ड",
+                newPassPh: "नया पासवर्ड",
+                confirmPassPh: "पुष्टि करें",
+                passSubmitBtn: "सबमिट",
+                contactUsModalTitle: "संपर्क करें",
+                logoutMsg: "वर्तमान खाते से लॉग आउट करने पर सभी कार्य निलंबित हो जाएंगे। क्या आप वाकई लॉग आउट करना चाहते हैं?",
+                cancelBtn: "रद्द करें",
+                confirmBtn: "पुष्टि करें",
+                navHome: "होम",
+                navDeposit: "डिपाजिट",
+                navUpi: "यूपीआई",
+                navTeam: "टीम",
+                navMe: "मी"
+            }
+        };
+
+        function toggleLanguage() {
+            isHindi = !isHindi;
+            let lang = isHindi ? 'hi' : 'en';
+
+            document.getElementById("pageTitle").innerText = translations[lang].pageTitle;
+            document.getElementById("langToggleBtn").innerText = translations[lang].langToggleBtn;
+            document.getElementById("txtEditProfile").innerText = translations[lang].editProfile;
+            document.getElementById("txtQuota").innerText = translations[lang].quota;
+            document.getElementById("txtRewardRatio").innerText = translations[lang].rewardRatio;
+            document.getElementById("txtTopUpBtn").innerText = translations[lang].topUpBtn;
+            document.getElementById("txtRechargeHistory").innerText = translations[lang].rechargeHistory;
+            document.getElementById("txtTokenHistory").innerText = translations[lang].tokenHistory;
+            document.getElementById("txtGoogleAuth").innerText = translations[lang].googleAuth;
+            document.getElementById("txtContactUs").innerText = translations[lang].contactUs;
+            document.getElementById("txtSignOut").innerText = translations[lang].signOut;
+
+            document.getElementById("txtAccountInfoTitle").innerText = translations[lang].accountInfoTitle;
+            document.getElementById("txtInfoId").innerText = translations[lang].infoId;
+            document.getElementById("txtInfoPhone").innerText = translations[lang].infoPhone;
+            document.getElementById("txtInfoPassword").innerText = translations[lang].infoPassword;
+            document.getElementById("txtInfoPin").innerText = translations[lang].infoPin;
+            document.getElementById("txtInfoResetPin").innerText = translations[lang].infoResetPin;
+
+            document.getElementById("txtChangePassTitle").innerText = translations[lang].changePassTitle;
+            document.getElementById("oldPassInput").placeholder = translations[lang].oldPassPh;
+            document.getElementById("newPassInput").placeholder = translations[lang].newPassPh;
+            document.getElementById("confirmPassInput").placeholder = translations[lang].confirmPassPh;
+            document.getElementById("txtPassSubmitBtn").innerText = translations[lang].passSubmitBtn;
+
+            document.getElementById("txtContactUsModalTitle").innerText = translations[lang].contactUsModalTitle;
+            document.getElementById("txtLogoutMsg").innerText = translations[lang].logoutMsg;
+            document.getElementById("txtCancelBtn").innerText = translations[lang].cancelBtn;
+            document.getElementById("txtConfirmBtn").innerText = translations[lang].confirmBtn;
+
+            document.getElementById("navHome").innerText = translations[lang].navHome;
+            document.getElementById("navDeposit").innerText = translations[lang].navDeposit;
+            document.getElementById("navUpi").innerText = translations[lang].navUpi;
+            document.getElementById("navTeam").innerText = translations[lang].navTeam;
+            document.getElementById("navMe").innerText = translations[lang].navMe;
+        }
+
+        function openAccountInfo() {
+            document.getElementById("meMainScreen").classList.remove("active");
+            document.getElementById("accountInfoScreen").classList.add("active");
+            window.scrollTo(0,0);
+        }
+        function closeAccountInfo() {
+            document.getElementById("accountInfoScreen").classList.remove("active");
+            document.getElementById("meMainScreen").classList.add("active");
+            window.scrollTo(0,0);
+        }
+
+        function openChangePassword() {
+            document.getElementById("accountInfoScreen").classList.remove("active");
+            document.getElementById("changePasswordScreen").classList.add("active");
+            window.scrollTo(0,0);
+        }
+        function closeChangePassword() {
+            document.getElementById("changePasswordScreen").classList.remove("active");
+            document.getElementById("accountInfoScreen").classList.add("active");
+            window.scrollTo(0,0);
+        }
+
+        function openPinScreen() {
+            alert(isHindi ? "पिन मैनेजमेंट पेज" : "PIN Management Page");
+        }
+        function openResetPinScreen() {
+            alert(isHindi ? "गूगल ऑथ के साथ पिन रीसेट पेज" : "Reset PIN Page with Google Auth");
+        }
+
+        function openContactUs() {
+            document.getElementById("contactModal").style.display = "flex";
+        }
+        function closeContactUs(e) {
+            document.getElementById("contactModal").style.display = "none";
+        }
+
+        function openLogoutDialog() {
+            document.getElementById("logoutDialog").style.display = "flex";
+        }
+        function closeLogoutDialog() {
+            document.getElementById("logoutDialog").style.display = "none";
+        }
+        function confirmLogout() {
+            alert(isHindi ? "सफलतापूर्वक लॉग आउट हो गया!" : "Logged out successfully!");
+            window.location.href = "login.html";
+        }
+    </script>
+</body>
+</html>

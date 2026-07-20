@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            text-align: center;
+        }
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 40px;
+        }
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            background-color: #f7f7f7;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #333;
+            outline: none;
+        }
+        .input-group input::placeholder {
+            color: #aaa;
+        }
+        .input-group .icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            font-size: 18px;
+        }
+        .register-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #777777;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .register-btn:hover {
+            background-color: #555555;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="title">Register</div>
+        
+        <form id="registerForm">
+            <!-- Phone Input -->
+            <div class="input-group">
+                <span class="icon">📞</span>
+                <input type="text" id="phone" placeholder="Phone" required>
+            </div>
+
+            <!-- Password Input -->
+            <div class="input-group">
+                <span class="icon">🔒</span>
+                <input type="password" id="password" placeholder="Enter Password" required>
+            </div>
+
+            <!-- Repeat Password Input -->
+            <div class="input-group">
+                <span class="icon">🔒</span>
+                <input type="password" id="repeatPassword" placeholder="Repeat Password" required>
+            </div>
+
+            <!-- Invite Code Input (Auto-filled, Readonly & Locked) -->
+            <div class="input-group">
+                <span class="icon">✉️</span>
+                <input type="text" id="inviteCode" placeholder="Oeahoyopbkbe" readonly required style="background-color: #e9e9e9; cursor: not-allowed;">
+            </div>
+
+            <!-- Register Button -->
+            <button type="submit" class="register-btn">Register</button>
+        </form>
+    </div>
+
+    <script>
+        // URL से ऑटोमैटिक इन्विटेशन कोड रीड करके बॉक्स में लॉक करना
+        const urlParams = new URLSearchParams(window.location.search);
+        const codeFromUrl = urlParams.get('code');
+        const inviteCodeInput = document.getElementById('inviteCode');
+
+        if (codeFromUrl) {
+            inviteCodeInput.value = codeFromUrl;
+        }
+
+        // रैंडम इन्विटेशन कोड जनरेटर
+        function generateRandomCode() {
+            return Math.random().toString(36).substring(2, 10);
+        }
+
+        // फॉर्म सबमिट करने पर लॉजिक
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const phone = document.getElementById('phone').value.trim();
+            const password = document.getElementById('password').value;
+            const repeatPassword = document.getElementById('repeatPassword').value;
+            const inviteCode = inviteCodeInput.value.trim();
+
+            // 1. कोड के बिना रजिस्ट्रेशन नहीं
+            if (!inviteCode) {
+                alert('इन्विटेशन कोड अनिवार्य है!');
+                return;
+            }
+
+            // 2. पासवर्ड मैच चेक
+            if (password !== repeatPassword) {
+                alert('दोनों पासवर्ड मेल नहीं खा रहे हैं!');
+                return;
+            }
+
+            // लोकल स्टोरेज से पुराना डेटा फेच करना
+            let users = JSON.parse(localStorage.getItem('app_users')) || [];
+
+            // 3. मोबाइल नंबर यूनिक चेक (एक नंबर से एक ही बार)
+            const existingUser = users.find(u => u.phone === phone);
+            if (existingUser) {
+                alert('इस मोबाइल नंबर से पहले ही रजिस्टर किया जा चुका है!');
+                return;
+            }
+
+            // 4. आईडी 1 से शुरू होगी और जैसे-जैसे मेंबर बढ़ेंगे, वैसे-वैसे बढ़ेगी
+            const newUserId = users.length + 1;
+            const myNewInviteCode = generateRandomCode();
+
+            // नया यूजर सेव करना
+            const newUser = {
+                id: newUserId,
+                phone: phone,
+                password: password,
+                usedInviteCode: inviteCode,
+                myInviteCode: myNewInviteCode
+            };
+
+            users.push(newUser);
+            localStorage.setItem('app_users', JSON.stringify(users));
+
+            alert(`रजिस्ट्रेशन सफल!\nआपकी परमानेंट आईडी (ID): ${newUserId}\nआपका इन्विटेशन कोड: ${myNewInviteCode}`);
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>
